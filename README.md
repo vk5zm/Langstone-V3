@@ -1,6 +1,6 @@
 # Langstone-V3 SDR Transceiver by Colin Durbridge G4EML
 
-# Currently supports the Adalm Pluto or the HackRF One, the Raspberry Pi 5  and the official 7" V1 LCD Display.
+# Currently supports the Adalm Pluto or the HackRF One, the Raspberry Pi 5  and the official 7" V1 or V2 LCD Displays.
 
 This is an experimental project to produce a simple VHF, UHF and Microwave SDR Transceiver operating on SSB CW and FM.
 
@@ -14,9 +14,9 @@ Currently only the following hardware is supported:-
 
 - Raspberry Pi 5
 
-- Official Original Raspberry Pi 7" 800 x 480 Version 1 touchscreen. Note:- The newer Version 2 1280 x 720 screen is not compatible. 
+- Official Original Raspberry Pi 7" 800 x 480 Version 1 touchscreen or Version 2 7" 1280 x 720 touchscreen. 
 
-- RPi5 to Touchscreen flat cable. (this will need to be purchased seperately as the cable supplied with the Touch Screen is not suitable)
+- RPi5 to Touchscreen flat cable. (this may need to be purchased seperately as the cable supplied with the V1 Touch Screen is not suitable)
 
 - Adalm Pluto or HackRF One SDR Modules. 
 
