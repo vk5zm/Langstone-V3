@@ -11,7 +11,7 @@ mkfifo /tmp/langstoneTRx
 if !(ps -ax |grep -v grep| grep -q Lang_TRX_Hack.py) then
    sudo amixer -c 2 cset numid=6 100%  > /dev/null 2>&1
    sudo amixer -c 2 cset numid=8 50%  > /dev/null 2>&1
-   ./Screen_Message "Langstone Loading"
+   /home/pi/Langstone/Screen_Message "Langstone Loading"
 
    #start up the GNU Radio flowgraph
    python /home/pi/Langstone/Lang_TRX_Hack.py > /tmp/LangstoneTRX_Hack.log 2>&1 &
@@ -24,7 +24,7 @@ if !(ps -ax |grep -v grep| grep -q Lang_TRX_Hack.py) then
       /home/pi/Langstone/GUI_Hack > /tmp/LangstoneGUI_Hack.log 2>&1
    else
       # If not then display the error screen 
-      ./Screen_Message "Lang_TRX_Hack.py" "Failed to Start" "See Log File"
+      /home/pi/Langstone/Screen_Message "Lang_TRX_Hack.py" "Failed to Start" "See Log File"
       sleep 5
    fi
 else
