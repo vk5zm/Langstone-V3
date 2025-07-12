@@ -10,6 +10,7 @@ int touchX=0;
 int touchY=0;
 
 int rotatetouch = 0;
+extern int V2Display;
 
 int touchAvailable();
 int getTouch();
@@ -39,6 +40,8 @@ int getTouch()
   size_t rb;
   struct input_event ev[64];
   int retval;
+  static int tX;
+  static int tY;
   
   retval=0;
   if(touchAvailable())
@@ -54,23 +57,32 @@ int getTouch()
               else if (ev[i].type == EV_KEY && ev[i].code == 330 && ev[i].value == 1) retval=1; //touch start
               else if (ev[i].type == EV_KEY && ev[i].code == 330 && ev[i].value == 0) retval=2; //touch finish
               else if (ev[i].type == EV_ABS && ev[i].code == 0 && ev[i].value > 0)
-              {
-			          touchX = ev[i].value;
-                      if(rotatetouch)
-                       {
-                       touchX=800 - touchX;
-                       }
-		          }
+                {
+			    tX = ev[i].value;
+ 		        }
                 else if (ev[i].type == EV_ABS  && ev[i].code == 1 && ev[i].value > 0)
                 {
-			            touchY = ev[i].value;
-                      if(rotatetouch)
-                       {
-                       touchY=480 - touchY;
-                       }
-		            }
+			      tY = ev[i].value;
+		        }
 
 	       }
+
+      if(V2Display)
+       {
+         touchX = (float) (1280 - tY) * (800.0/1280.0);
+         touchY = (float) tX * (480.0/720.0);
+       }
+      else
+       {
+          touchX = tX;
+          touchY = tY;
+       }
+
+      if(rotatetouch)
+       {
+          touchY = 480 - touchY;
+          touchX = 800 - touchX;
+       }
 
     }
   return retval;

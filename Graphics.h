@@ -25,13 +25,14 @@ int backColourG=0;
 int backColourB=0;
 
 int rotatescreen = 0;
+extern int V2Display;
 
 
 void closeScreen(void);
 int initScreen(void);
 void rotateScreen(int rot);
 void setPixel(int x, int y, int R, int G, int B);
-void clearScreen();
+void clearScreen(void);
 void displayChar(int ch);
 void setLargePixel(int x, int y, int size, int R, int G, int B);
 void gotoXY(int x, int y);
@@ -205,15 +206,17 @@ backColourG=G;
 backColourB=B;
 }
 
-void clearScreen()
+
+void clearScreen(void)
 {
-  for(int y=0;y<screenYsize;y++)
-	  {
-      for(int x=0;x<screenXsize;x++)
-        {
-        setPixel(x,y,backColourR,backColourG,backColourB);
-        }
-  	}
+  for(int p=0; p < screenXsize*screenYsize*4; p=p+4)
+   {
+    memset(fbp+p,backColourB,1);  //Blue
+  	memset(fbp+p+1,backColourG,1);  //Green
+  	memset(fbp+p+2,backColourR,1);  //Red
+  	memset(fbp+p+3,0x80,1);  //A
+   }
+
 }
 
 void setPixel(int x, int y, int R, int G, int B)
@@ -223,8 +226,19 @@ if(rotatescreen)
   x=800 - x;
   y=480 - y;
  }
+ 
+ if(V2Display)
+ {
+   float tempx = x;
+   float tempy = y;
+   tempy=tempy * (720.0 / 480.0);
+   tempx=tempx * (1280.0/800.0);
+   x= tempy;
+   y= 1280- tempx;
+ }
 
-if((x<800)&(y<480))
+
+if((x<screenXsize)&(y<screenYsize))
   {
   int p=(x+screenXsize*y)*4;
   	memset(fbp+p,B,1);  //Blue
@@ -302,6 +316,11 @@ int initScreen(void)
   
   screenXsize=vinfo.xres;
   screenYsize=vinfo.yres;
+  
+  if(screenYsize == 1280) 
+   {
+     V2Display = 1;
+   }
   
   screenSize = finfo.smem_len;
   fbp = (char*)mmap(0, screenSize, PROT_READ | PROT_WRITE, MAP_SHARED, fbfd, 0);

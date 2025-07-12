@@ -1,6 +1,8 @@
 #
 #!/bin/bash
 
+/home/pi/Langstone/Screen_Message "Langstone Loading"
+sleep 2
 #Create command pipe
 if test -e /tmp/langstoneTRx ;then
 rm /tmp/langstoneTRx
@@ -11,11 +13,7 @@ mkfifo /tmp/langstoneTRx
 if !(ps -ax |grep -v grep| grep -q Lang_TRX_Hack.py) then
    sudo amixer -c 2 cset numid=6 100%  > /dev/null 2>&1
    sudo amixer -c 2 cset numid=8 50%  > /dev/null 2>&1
-   if (grep -q "RotateScreen 1" /home/pi/Langstone/Langstone_Hack.conf) then
-      sudo cp /home/pi/Langstone/splashload_inv.bgra /dev/fb0   
-   else  
-      sudo cp /home/pi/Langstone/splashload.bgra /dev/fb0
-   fi   
+   /home/pi/Langstone/Screen_Message "Langstone Loading"
 
    #start up the GNU Radio flowgraph
    python /home/pi/Langstone/Lang_TRX_Hack.py > /tmp/LangstoneTRX_Hack.log 2>&1 &
@@ -28,11 +26,7 @@ if !(ps -ax |grep -v grep| grep -q Lang_TRX_Hack.py) then
       /home/pi/Langstone/GUI_Hack > /tmp/LangstoneGUI_Hack.log 2>&1
    else
       # If not then display the error screen 
-      if (grep -q "RotateScreen 1" /home/pi/Langstone/Langstone_Hack.conf) then
-        sudo cp /home/pi/Langstone/gnufail_Hack_inv.bgra /dev/fb0   
-      else  
-        sudo cp /home/pi/Langstone/gnufail_Hack.bgra /dev/fb0
-   fi
+      /home/pi/Langstone/Screen_Message "Lang_TRX_Hack.py" "Failed to Start" "See Log File"
       sleep 5
    fi
 else

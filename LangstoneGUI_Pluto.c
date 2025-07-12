@@ -8,8 +8,8 @@
 #include <lgpio.h>
 #include <stdio.h>
 #include <string.h>
-#include "Graphics.h"
 #include "Touch.h"
+#include "Graphics.h"
 #include "Mouse.h"
 #include "hmi.h"
 #include "Morse.c"
@@ -276,6 +276,7 @@ int touchPresent;
 int plutoPresent;
 int hmiPresent;
 int portsdownPresent;
+int V2Display =0 ;
 
 
 
@@ -989,7 +990,7 @@ void detectHw()
       if(ln[0]=='N')        //name of device
       {
         p=0;
-        if((strstr(ln,"FT5406")!=NULL) || (strstr(ln,"pi-ts")!=NULL) || (strstr(ln,"ft5x06")!=NULL))         //Found Raspberry Pi TouchScreen entry
+        if((strstr(ln,"FT5406")!=NULL) || (strstr(ln,"pi-ts")!=NULL) || (strstr(ln,"ft5x06")!=NULL) || (strstr(ln,"Goodix")!=NULL))         //Found Raspberry Pi TouchScreen entry
           {
            p=1;                                //we have found the touchscreen
           }  
