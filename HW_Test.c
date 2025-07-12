@@ -17,6 +17,7 @@ int mousePresent;
 int touchPresent;
 char mousePath[20];
 char touchPath[20];
+int V2Display =0 ;
 
 int gpiohandle;
 
@@ -102,7 +103,7 @@ int main()
       if(ln[0]=='N')        //name of device
       {
         p=0;
-        if((strstr(ln,"FT5406")!=NULL) || (strstr(ln,"pi-ts")!=NULL) || (strstr(ln,"ft5x06")!=NULL))         //Found Raspberry Pi TouchScreen entry
+        if((strstr(ln,"FT5406")!=NULL) || (strstr(ln,"pi-ts")!=NULL) || (strstr(ln,"ft5x06")!=NULL) || (strstr(ln,"Goodix")!=NULL))         //Found Raspberry Pi TouchScreen entry
           {
            p=1;
           }                                                                 
