@@ -1,6 +1,8 @@
 #
 #!/bin/bash
 
+/home/pi/Langstone/Screen_Message "Langstone Loading"
+sleep 2
 #Create command pipe
 if test -e /tmp/langstoneTRx ;then
 rm /tmp/langstoneTRx

@@ -5,6 +5,8 @@
 # Please use the command ./set_pluto to configure the Pluto IP address if required. 
 # This will ensure that all necessary files are updated, including this one. 
 
+/home/pi/Langstone/Screen_Message "Langstone Loading"
+sleep 2
 export PLUTO_IP=pluto.local
 
 #Create command pipe
@@ -17,7 +19,7 @@ mkfifo /tmp/langstoneTRx
 if !(ps -ax |grep -v grep| grep -q Lang_TRX_Pluto.py) then
    sudo amixer -c 2  cset numid=6 100%  > /dev/null 2>&1
    sudo amixer -c 2 cset numid=8 50%  > /dev/null 2>&1
-   /home/pi/Langstone/Screen_Message "Langstone Loading"
+   /home/pi/Langstone/Screen_Message "Langstone Loading" "Checking Pluto"
    
    retry=0
    until [ ${retry} -ge 4 ]
@@ -42,9 +44,11 @@ if !(ps -ax |grep -v grep| grep -q Lang_TRX_Pluto.py) then
       sleep 5
    fi
 
+   /home/pi/Langstone/Screen_Message "Langstone Loading" "Loading GNURadio"
+
    #start up the GNU Radio flowgraph
    python /home/pi/Langstone/Lang_TRX_Pluto.py > /tmp/LangstoneTRX_Pluto.log 2>&1 &
-   sleep 10
+   sleep 3
 
    #check that the GNU module started corretly
 
