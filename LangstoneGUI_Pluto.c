@@ -2076,14 +2076,7 @@ if(buttonTouched(funcButtonsX+buttonSpaceX*6,funcButtonsY))   //Button 7 = PTT  
       sendFifo("Q");       //kill the SDR 
       writeConfig();
       iio_context_destroy(plutoctx);
-      if(screenrotate)
-      {
-        system("sudo cp /home/pi/Langstone/splash_inv.bgra /dev/fb0");
-      }
-      else
-      {
-        system("sudo cp /home/pi/Langstone/splash.bgra /dev/fb0");
-      }
+      system("/home/pi/Langstone/Screen_Message ""Langstone Stopped""");
       sleep(2);
       system("sudo poweroff");                          
       return;      
