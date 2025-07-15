@@ -93,6 +93,8 @@ void setCTCSS(int t);
 void displayError(char*st);
 void flushUDP(void);
 void setFFTBW(int bw);
+void startGNURadio(void);
+void restartGNURadio(void);
 
 int wr_ch_lli(struct iio_channel *chn, const char* what, long long val);
 int wr_ch_bool(struct iio_channel *chn, const char* what, bool val);
@@ -327,6 +329,10 @@ struct iio_device *plutophy;
 #define RXPORT 7373
 #define TXPORT 7474
 
+#define FFTTIMEOUT 200                //timeout for FFT data 200 * 10ms = 2 seconds
+
+int FFTTimeout;
+
 
 
 
@@ -341,6 +347,8 @@ int main(int argc, char* argv[])
   strcat(plutoip,penv);
 
   printf("plutoip = %s\n",plutoip);
+  
+  startGNURadio();
    
   initUDP();
   
@@ -474,6 +482,17 @@ int main(int argc, char* argv[])
    setTx(0);
    firstpass=0;
    }
+   
+   
+   if(FFTTimeout >0 )                                   //check to see if the FFT transfers are still happening. 
+    {
+     FFTTimeout--;
+    }
+    else
+    {
+      restartGNURadio();                                         //attempt to restart GNUU Radio.
+    }
+   
     
     while(runTimeMs() < (lastClock + 10))                //delay until the next iteration at 100 per second (10ms)
     {
@@ -562,6 +581,8 @@ void waterfall()
       
       if(ret>0)
     {    
+       
+       FFTTimeout = FFTTIMEOUT;
     
         //shift buffer
         for(int r=rows-1;r>0;r--)
@@ -1330,8 +1351,7 @@ void sendFifo(char * s)
   strcat(fs,"\n");
   
   success = 0;
-  do
-  {
+
   fifofd=open("/tmp/langstoneTRx",O_WRONLY|O_NONBLOCK);
   retry=0;
     do
@@ -1340,20 +1360,8 @@ void sendFifo(char * s)
        usleep(5000);
        retry++;
      }
-   while((ret==-1)&(retry<10));   
-  if(ret==-1)
-    {
-      displayError("Waiting for Lang_TRX.py");
-      success = 0;
-     }
-  else
-     {
-     success = 1;
-     }
+   while((ret==-1)&(retry<20));    
   close(fifofd);
-  usleep(1000);
-  }
-  while(success == 0);
 }
 
 void initGPIO(void)
@@ -2005,7 +2013,7 @@ if(buttonTouched(funcButtonsX+buttonSpaceX*3,funcButtonsY))    // Button4 =SET o
       }
     }
        
-if(buttonTouched(funcButtonsX+buttonSpaceX*4,funcButtonsY))    //Button 5 =MONI (only allowed in Sat mode)  or Blank
+if(buttonTouched(funcButtonsX+buttonSpaceX*4,funcButtonsY))    //Button 5 =MONI (only allowed in Sat mode)  or Restart
     {
     if(inputMode==FREQ)
       {
@@ -2015,6 +2023,10 @@ if(buttonTouched(funcButtonsX+buttonSpaceX*4,funcButtonsY))    //Button 5 =MONI 
         }      
       return;
       } 
+      else if (inputMode==SETTINGS)
+      {
+        restartGNURadio();              
+      }
     else
       {
       setInputMode(FREQ);
@@ -3467,8 +3479,8 @@ void showSettingsMenu(void)
     displayButton(" ");
     displayButton("NEXT");
     displayButton("PREV");
-    displayButton(" ");
     setForeColour(255,0,0);
+    displayButton1x12("RESTART");
     if (portsdownPresent==1)
     {
         displayButton2x12("EXIT TO","PORTSDOWN");
@@ -3906,3 +3918,22 @@ return 0;
 }
 
 
+void startGNURadio(void)
+{
+   printf("Starting GNU Radio\n");
+   FFTTimeout = FFTTIMEOUT * 5;                                //allow time to start
+   system("python /home/pi/Langstone/Lang_TRX_Pluto.py > /tmp/LangstoneTRX_Pluto.log 2>&1 &");
+}
+
+void restartGNURadio(void)
+{
+   setBandBits(0);
+   sendFifo("H0");        //unlock the flowgraph so that it can exit
+   sendFifo("Q");       //kill the SDR
+   FFTTimeout = FFTTIMEOUT * 5;                                //allow time to restart
+   displayError("Restarting GNURadio");
+   sleep(2);
+   startGNURadio();  
+   sleep(2);
+   initSDR();
+}
