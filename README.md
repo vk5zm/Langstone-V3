@@ -1,6 +1,6 @@
 # Langstone-V3 SDR Transceiver by Colin Durbridge G4EML
 
-# Currently supports the Adalm Pluto or the HackRF One, the Raspberry Pi 5  and the official 7" V1 or V2 LCD Displays.
+# Currently supports the Adalm Pluto or the HackRF One, the Raspberry Pi 5 or Pi 4  and the official 7" V1 or V2 LCD Displays.
 
 This is an experimental project to produce a simple VHF, UHF and Microwave SDR Transceiver operating on SSB CW and FM.
 
@@ -12,7 +12,7 @@ To install the software on a raspberry pi please follow the instructions further
 
 Currently only the following hardware is supported:-
 
-- Raspberry Pi 5
+- Raspberry Pi 5 or Pi 4 (Pi 4 not officially supported but it seesm to work OK)
 
 - Official Original Raspberry Pi 7" 800 x 480 Version 1 touchscreen or Version 2 7" 1280 x 720 touchscreen. 
 
@@ -56,7 +56,7 @@ The preferred installation method only needs a Windows PC connected to the same 
 
 - Download and install the Raspberry Pi Imager utility from https://downloads.raspberrypi.org/imager/imager_latest.exe 
 
-- Start the Imager Utility, Select 'Raspberry Pi 5' as the Raspberry Pi Device. Select 'Raspberry Pi OS (Other)'' then 'Raspberry Pi OS Lite (64 Bit)'' as the operating system.
+- Start the Imager Utility, Select 'Raspberry Pi 5' or 'Raspberry Pi 4' as the Raspberry Pi Device. Select 'Raspberry Pi OS (Other)'' then 'Raspberry Pi OS Lite (64 Bit)'' as the operating system.
 
 - Insert your micro SD card into a card reader and select that device for the Storage.  Note:- Ignore and close any message boxes about reformatting the drive. This is not needed. 
 
