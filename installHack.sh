@@ -98,6 +98,7 @@ sudo raspi-config nonint do_boot_behaviour B2
 
 sudo rm /etc/profile.d/sshpwd.sh
 
+sudo sed -i '/dtoverlay=vc4-fkms-v3d/s/^/#/' /boot/firmware/config.txt
 
 #make Langstone autostart on boot
 
