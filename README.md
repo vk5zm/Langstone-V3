@@ -12,7 +12,7 @@ To install the software on a raspberry pi please follow the instructions further
 
 Currently only the following hardware is supported:-
 
-- Raspberry Pi 5 or Pi 4 (Pi 4 not officially supported but it seesm to work OK)
+- Raspberry Pi 5 or Pi 4 (Pi 4 not officially supported or fully tested but it seems to work OK)
 
 - Official Original Raspberry Pi 7" 800 x 480 Version 1 touchscreen or Version 2 7" 1280 x 720 touchscreen. 
 
