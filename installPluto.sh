@@ -50,6 +50,24 @@ make all
 sudo make install
 
 echo "#################################"
+echo "##     Install Wiring Pi       ##"
+echo "#################################"
+
+# Install WiringPi
+cd /home/pi
+git clone https://github.com/WiringPi/WiringPi.git
+cd WiringPi
+./build debian
+
+# Read latest WiringPi version number and install it
+vMaj=`cut -d. -f1 VERSION`
+vMin=`cut -d. -f2 VERSION`
+mv debian-template/wiringpi_"$vMaj"."$vMin"_armhf.deb .
+sudo apt install ./wiringpi_"$vMaj"."$vMin"_armhf.deb
+cd /home/pi
+
+
+echo "#################################"
 echo "##        Install lgpio      ##"
 echo "#################################"
 
