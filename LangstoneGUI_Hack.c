@@ -1015,7 +1015,7 @@ void detectHw()
   fclose(fp);
   if(ln)  free(ln);
   
-  if ((fp = fopen("/home/pi/rpidatv/bin/rpidatvgui", "r")))                      //test to see if Portsdown file is present. If so we change the exit behaviour. 
+  if ((fp = fopen("$HOME/rpidatv/bin/rpidatvgui", "r")))                      //test to see if Portsdown file is present. If so we change the exit behaviour. 
   {
     fclose(fp);
     portsdownPresent=1;
@@ -1857,7 +1857,7 @@ if(buttonTouched(funcButtonsX+buttonSpaceX*6,funcButtonsY))   //Button 7 = PTT  
       sendFifo("H");        //unlock the flowgraph so that it can exit
       sendFifo("Q");       //kill the SDR 
       writeConfig();
-      system("/home/pi/Langstone/Screen_Message ""Langstone Stopped""");
+      system("$HOME/Langstone/Screen_Message ""Langstone Stopped""");
       sleep(2);
       system("sudo poweroff");                          
       return;      
@@ -3396,7 +3396,7 @@ char variable[50];
 char value[100];
 char vname[20];
 
-conffile=fopen("/home/pi/Langstone/Langstone_Hack.conf","r");
+conffile=fopen("$HOME/Langstone/Langstone_Hack.conf","r");
 
 if(conffile==NULL)
   {
@@ -3523,7 +3523,7 @@ for(int i=0;i<MORSEIDENTLENGTH;i++)                                             
   }
 
 
-conffile=fopen("/home/pi/Langstone/Langstone_Hack.conf","w");
+conffile=fopen("$HOME/Langstone/Langstone_Hack.conf","w");
 
 if(conffile==NULL)
   {
@@ -3584,7 +3584,7 @@ void startGNURadio(void)
 {
    printf("Starting GNU Radio\n");
    FFTTimeout = FFTTIMEOUT * 5;                                //allow time to start
-   system("python /home/pi/Langstone/Lang_TRX_Hack.py > /tmp/LangstoneTRX_Hack.log 2>&1 &");
+   system("python $HOME/Langstone/Lang_TRX_Hack.py > /tmp/LangstoneTRX_Hack.log 2>&1 &");
 }
 
 void restartGNURadio(void)

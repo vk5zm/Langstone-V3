@@ -1,6 +1,6 @@
 echo Stopping GNU Radio Modules
 killall python >/dev/null 2>&1
 echo Stopping GUI
-killall /home/pi/Langstone/GUI_Hack >/dev/null 2>&1
-/home/pi/Langstone/Screen_Message "Langstone Stopped"  
+killall $HOME/Langstone/GUI_Hack >/dev/null 2>&1
+$HOME/Langstone/Screen_Message "Langstone Stopped"  
 

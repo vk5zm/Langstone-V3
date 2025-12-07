@@ -54,7 +54,7 @@ echo "##     Install Wiring Pi       ##"
 echo "#################################"
 
 # Install WiringPi
-cd /home/pi
+cd $HOME
 git clone https://github.com/WiringPi/WiringPi.git
 cd WiringPi
 ./build debian
@@ -64,7 +64,7 @@ vMaj=`cut -d. -f1 VERSION`
 vMin=`cut -d. -f2 VERSION`
 mv debian-template/wiringpi_"$vMaj"."$vMin"_armhf.deb .
 sudo apt install ./wiringpi_"$vMaj"."$vMin"_armhf.deb
-cd /home/pi
+cd $HOME
 
 
 
@@ -129,7 +129,7 @@ if !(grep Langstone ~/.bashrc) then
   echo if test -z \"\$SSH_CLIENT\" >> ~/.bashrc 
   echo then >> ~/.bashrc
   echo "stty -echo -icanon" >> ~/.bashrc
-  echo /home/pi/Langstone/run >> ~/.bashrc
+  echo $HOME/Langstone/run >> ~/.bashrc
   echo fi >> ~/.bashrc
 fi
 

@@ -1,5 +1,5 @@
-cc /home/pi/Langstone/LangstoneGUI_Pluto.c -o /home/pi/Langstone/GUI_Pluto -liio -llgpio 
-cc /home/pi/Langstone/LangstoneGUI_Hack.c -o /home/pi/Langstone/GUI_Hack -llgpio 
-cc /home/pi/Langstone/HW_Test.c -o /home/pi/Langstone/HW_Test -llgpio
-cc /home/pi/Langstone/Pluto_Test.c -o /home/pi/Langstone/Pluto_Test -liio
-cc /home/pi/Langstone/Screen_Message.c -o /home/pi/Langstone/Screen_Message
+cc $HOME/Langstone/LangstoneGUI_Pluto.c -o $HOME/Langstone/GUI_Pluto -liio -llgpio 
+cc $HOME/Langstone/LangstoneGUI_Hack.c -o $HOME/Langstone/GUI_Hack -llgpio 
+cc $HOME/Langstone/HW_Test.c -o $HOME/Langstone/HW_Test -llgpio
+cc $HOME/Langstone/Pluto_Test.c -o $HOME/Langstone/Pluto_Test -liio
+cc $HOME/Langstone/Screen_Message.c -o $HOME/Langstone/Screen_Message

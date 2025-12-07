@@ -44,11 +44,11 @@ char variable[50];
 char value[100];
 char vname[20];
 
-conffile=fopen("/home/pi/Langstone/Langstone_Pluto.conf","r");
+conffile=fopen("$HOME/Langstone/Langstone_Pluto.conf","r");
 
 if(conffile==NULL)
   {
-    conffile=fopen("/home/pi/Langstone/Langstone_Hack.conf","r");
+    conffile=fopen("$HOME/Langstone/Langstone_Hack.conf","r");
   }
   
 if(conffile==NULL)
