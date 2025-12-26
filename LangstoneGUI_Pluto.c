@@ -1081,16 +1081,30 @@ void displayError(char*st)
 void initPluto(void)
 {
     plutoctx = iio_create_context(NULL,plutoip);
-      if(iio_err(plutoctx)!=0)
-      {
-        plutoPresent=0;
+    if (iio_err(plutoctx) != 0)
+    {
+        plutoPresent = 0;
         displayError("Pluto not responding");
         return;
-      }
-      else
-      {
-      plutophy = iio_context_find_device(plutoctx, "ad9361-phy"); 
-      }
+    }
+
+    plutophy = iio_context_find_device(plutoctx, "ad9361-phy");
+    if (plutophy == NULL)
+    {
+        plutoPresent = 0;
+        displayError("AD9361-phy not responding");
+        return;
+    }
+
+    plutoPresent = 1;   // Pluto found and Linux driver is confirmed working
+
+    /*  enable Pluto onboard GPIO using method described in AD9361 Reference 
+        Manual UG-570 Rev A, pg 85 - GENERAL PURPOSE OUTPUT CONTROL
+
+        https://www.analog.com/media/en/technical-documentation/user-guides/AD9361_Reference_Manual_UG-570.pdf
+    */
+    wr_db_str(plutophy,"direct_reg_access","0x26 0x10");        // set bit D4 to enable manual GPIO mode
+    wr_db_str(plutophy,"direct_reg_access","0x27 0x00");        // set Pluto GPO[3:0] all low
 }
 
 
