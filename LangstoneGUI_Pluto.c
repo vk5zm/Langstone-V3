@@ -353,7 +353,7 @@ int main(int argc, char* argv[])
   printf("plutoip = %s\n",plutoip);
   
   startGNURadio();
-   
+  sleep(2);               // give GR time to start before we try to configure
   initUDP();
   
   
@@ -484,6 +484,7 @@ int main(int argc, char* argv[])
    {
    setTx(1);                                              //seems to be needed to initialise Pluto
    setTx(0);
+   setMode(bandMode[band]);                               // WORKAROUND: kick GNU Radio in the guts again
    firstpass=0;
    }
    
