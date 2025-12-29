@@ -6,7 +6,7 @@
 # This will ensure that all necessary files are updated, including this one. 
 
 $HOME/Langstone/Screen_Message "Langstone Loading"
-sleep 2
+
 export PLUTO_IP=pluto.local
 
 #Create command pipe
@@ -44,22 +44,11 @@ if !(ps -ax |grep -v grep| grep -q Lang_TRX_Pluto.py) then
       sleep 5
    fi
 
-   $HOME/Langstone/Screen_Message "Langstone Loading" "Loading GNURadio"
+   $HOME/Langstone/Screen_Message "Langstone Loading"
 
-   #start up the GNU Radio flowgraph
-   python $HOME/Langstone/Lang_TRX_Pluto.py > /tmp/LangstoneTRX_Pluto.log 2>&1 &
-   sleep 3
+# Start the GUI (which will also start the GNURadio module
 
-   #check that the GNU module started corretly
-
-   if (ps -ax | grep -v grep| grep -q Lang_TRX_Pluto.py)then
-      # If it did then start the GUI
-      $HOME/Langstone/GUI_Pluto > /tmp/LangstoneGUI_Pluto.log 2>&1
-   else
-      # If not then display the error screen
-      $HOME/Langstone/Screen_Message "Lang_TRX_Pluto.py" "Failed to Start" "See Log File"
-      sleep 5
-   fi
+   $HOME/Langstone/GUI_Pluto > /tmp/LangstoneGUI_Pluto.log 2>&1
    # Send a reboot command to Pluto after GUI Exits
    ssh-keygen -f "$HOME/.ssh/known_hosts" -R $PLUTO_IP >/dev/null 2>&1
    timeout 2 sshpass -p analog ssh -o StrictHostKeyChecking=no root@$PLUTO_IP 'PATH=/bin:/sbin:/usr/bin;reboot'  >/dev/null 2>&1
