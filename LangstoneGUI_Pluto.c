@@ -85,7 +85,7 @@ int readPlutoRxGain(void);
 void setBand(int b);
 void setPlutoGpo(int p);
 void setTxPin(int v);
-long long runTimeMs(void);                                                    
+unsigned long long runTimeMs(void);                                                    
 void clearPopUp(void);
 void displayPopupMode(void);
 void displayPopupBand(void);
@@ -97,18 +97,18 @@ void setFFTBW(int bw);
 void startGNURadio(void);
 void restartGNURadio(void);
 
-int wr_ch_lli(struct iio_channel *chn, const char* what, long long val);
-int wr_ch_bool(struct iio_channel *chn, const char* what, bool val);
-int wr_ch_dbl(struct iio_channel *chn, const char* what, double val);
-int wr_ch_str(struct iio_channel *chn, const char* what, const char* str);
-int wr_db_str(struct iio_device *dev, const char* what, const char* str);
+int wr_ch_lli(struct iio_channel *chn, const char *what, long long val);
+int wr_ch_bool(struct iio_channel *chn, const char *what, bool val);
+int wr_ch_dbl(struct iio_channel *chn, const char *what, double val);
+int wr_ch_str(struct iio_channel *chn, const char *what, const char *str);
+int wr_db_str(struct iio_device *dev, const char *what, const char *str);
 
 int minGain(double freq);
 int maxGain(double freq);
 void setDialLock(int d);
 void setBeacon(int b);
 
-FILE *openFile( char *fn, char *mode );
+FILE *openFile(char *fn, char *mode);
 
 int firstpass=1;
 double freq;
@@ -238,7 +238,7 @@ int breakInTime=100;
 
 long long lastLOhz;
 
-long long lastClock;
+unsigned long long lastClock;
 long progStartTime=0;
 
 int lastKey=1;
@@ -342,180 +342,178 @@ int FFTTimeout;
 
 int main(int argc, char* argv[])
 {
-  strcpy(plutoip,"ip:");
-  char * penv = getenv("PLUTO_IP");
-  if(penv==NULL)
+    setbuf(stdout, NULL);           // speed up text to appear in log
+
+    strcpy(plutoip,"ip:");
+    char * penv = getenv("PLUTO_IP");
+    if (penv == NULL)
     {
-      strcpy(penv,"pluto.local");
+        strcpy(penv,"pluto.local");
     }
-  strcat(plutoip,penv);
+    strcat(plutoip,penv);
+    printf("plutoip = %s\n",plutoip);
 
-  printf("plutoip = %s\n",plutoip);
-  
-  startGNURadio();
-   
-  initUDP();
-  
-  
-  lastClock=0;
-  readConfig();
-  setRotation(screenrotate);
-  detectHw();
-  initPluto();
-  initFifos();
-  initScreen();
-  initGPIO();
-  printf("Initialising Touch at %s\n",touchPath);
-  if(touchPresent) initTouch(touchPath);
-  printf("Initialising Mouse at %s\n",mousePath);
-  if(mousePresent) initMouse(mousePath);
-  if(hmiPresent) initHmi(hmiPath);
-  initGUI(); 
-  initSDR(); 
-  //              RGB Vals   Black >  Blue  >  Green  >  Yellow   >   Red     4 gradients    //number of gradients is varaible
-  gen_palette((char [][3]){ {0,0,0},{0,0,255},{0,255,0},{255,255,0},{255,0,0}},4);
+    startGNURadio();
+    sleep(2);               // give GR time to start before we try to configure
+    initUDP();
 
-  
-  while(1)
-  {
-  
-    processGPIO();
-                                                                                                                    
-   if(touchPresent)
-     {
-       if(getTouch()==1)
+    lastClock=0;
+    readConfig();
+    setRotation(screenrotate);
+    detectHw();
+    initPluto();
+    initFifos();
+    initScreen();
+    initGPIO();
+
+    printf("Initialising Touch at %s\n",touchPath);
+    if (touchPresent)
+        initTouch(touchPath);
+
+    printf("Initialising Mouse at %s\n",mousePath);
+    if (mousePresent)
+        initMouse(mousePath);
+
+    if (hmiPresent)
+        initHmi(hmiPath);
+
+    initGUI(); 
+    initSDR(); 
+    //              RGB Vals   Black >  Blue  >  Green  >  Yellow   >   Red     4 gradients    //number of gradients is varaible
+    gen_palette((char [][3]){ {0,0,0},{0,0,255},{0,255,0},{255,255,0},{255,0,0}},4);
+
+    while(1)
+    {
+        processGPIO();
+                                                                                                                        
+        if (touchPresent)
         {
-         processTouch();
+            if (getTouch() == 1)
+            {
+                processTouch();
+            }
         }
-     }
-    
-    if(mousePresent)
-      {
-        int but=getMouse();
-        if(but>0)
-          {
-             processMouse(but);
-          }
-       if(twoButTimer>0) 
-       {
-        twoButTimer--;
-        if(twoButTimer==0)
-          {
-            lastBut=0;
-          }
-       }
-           
-      }
-      
-    if(hmiPresent)
-      {
-        int hr=getHmi();
-        if(hr > 0)
-          {
-          processHmi(hr);
-          }
-      }
+
+        if (mousePresent)
+        {
+            int but=getMouse();
+            if (but > 0)
+            {
+                processMouse(but);
+            }
+            if (twoButTimer > 0) 
+            {
+                twoButTimer--;
+                if (twoButTimer == 0)
+                {
+                    lastBut=0;
+                }
+            }
+        }
             
-   
-    if(sendBeacon==2)
-      {
-        dotCount=dotCount+1;
-        if(dotCount==1)
-          {
-            setKey(1);
-          }
-        if(dotCount==12)
-          {
-            setKey(0);
-          }
-        if(dotCount==25)
-          {
-          dotCount=0;
-          }
-      } 
-      
-
-
-    if(sendBeacon==1)                                   //sending CWID
-    {
-      if(keyDownTimer>0)
-        {    
-          if((keyDownTimer>100) &&( keyDownTimer < CWIDkeyDownTime-100))                                //Key down between Idents
-           {
-            setKey(1);
-           }
-           else
-           {
-            setKey(0);
-           }
-        keyDownTimer--;
-        }    
-     else
-      {
-       int ret=morseKey();                              //get the next key from morse string
-       if(ret==-1)                                      // Ident finished
+        if (hmiPresent)
         {
-        keyDownTimer=CWIDkeyDownTime + 100;             //key down for this time between idents. Add 1 second to force a minimum key up gap between idents. 
+            int hr = getHmi();
+            if (hr > 0)
+            {
+                processHmi(hr);
+            }
         }
-       else
-        {  
-          setKey(ret);
-        }
-      }
-  
-    }
-
-
-
-
-    waterfall();
-
-    if(configCounter>0)                                       //save the config after 5 seconds of inactivity.
-    {
-      configCounter=configCounter-1;                                                                                                  
-      if(configCounter==0)
+                
+        if (sendBeacon == 2)
         {
-        writeConfig();
+            dotCount=dotCount+1;
+            if (dotCount == 1)
+            {
+                setKey(1);
+            }
+            if (dotCount == 12)
+            {
+                setKey(0);
+            }
+            if (dotCount == 25)
+            {
+                dotCount = 0;
+            }
+        } 
+
+        if (sendBeacon == 1)                    // sending CWID
+        {
+            if (keyDownTimer > 0)
+            {    
+                if ((keyDownTimer > 100) &&( keyDownTimer < CWIDkeyDownTime - 100))                                //Key down between Idents
+                {
+                    setKey(1);
+                }
+                else
+                {
+                    setKey(0);
+                }
+                keyDownTimer--;
+            }    
+            else
+            {
+                int ret = morseKey();                             // get the next key from morse string
+                if (ret == -1)                                    // Ident finished
+                {
+                    keyDownTimer = CWIDkeyDownTime + 100;         //key down for this time between idents. Add 1 second to force a minimum key up gap between idents. 
+                }
+                else
+                {  
+                    setKey(ret);
+                }
+            }
         }
+
+        waterfall();
+
+        if (configCounter > 0)                  // save the config after 5 seconds of inactivity.
+        {
+            configCounter = configCounter-1;
+            if (configCounter == 0)
+            {
+                writeConfig();
+            }
+        }
+
+        if (firstpass == 1)
+        {
+            setTx(1);                           // seems to be needed to initialise Pluto
+            setTx(0);
+            setMode(bandMode[band]);            // kick GNU Radio in the guts again
+            firstpass = 0;
+        }
+
+        if (FFTTimeout > 0)                     // check to see if the FFT transfers are still happening. 
+        {
+            FFTTimeout--;
+        }
+        else
+        {
+            printf("main(): FFTTimout !\n");        // put in the log why
+            restartGNURadio();                      // attempt to restart GNUU Radio.
+        }
+
+        while (runTimeMs() < (lastClock + 10))      //delay until the next iteration at 100 per second (10ms)
+        {
+            usleep(100);
+        }
+        lastClock = runTimeMs();
+
     }
-    
-   
-   if(firstpass==1)
-   {
-   setTx(1);                                              //seems to be needed to initialise Pluto
-   setTx(0);
-   firstpass=0;
-   }
-   
-   
-   if(FFTTimeout >0 )                                   //check to see if the FFT transfers are still happening. 
-    {
-     FFTTimeout--;
-    }
-    else
-    {
-      restartGNURadio();                                         //attempt to restart GNUU Radio.
-    }
-   
-    
-    while(runTimeMs() < (lastClock + 10))                //delay until the next iteration at 100 per second (10ms)
-    {
-    usleep(100);
-    }
-    lastClock=runTimeMs();
-  }
 }
 
-long long runTimeMs(void)
+unsigned long long runTimeMs(void)
 {
-struct timeval tt;
-gettimeofday(&tt,NULL);
-if(progStartTime==0)
-  {
-    progStartTime=tt.tv_sec;
-  }
-tt.tv_sec=tt.tv_sec - progStartTime;
-return ((tt.tv_sec*1000) + (tt.tv_usec/1000));
+    struct timeval tt;
+    gettimeofday(&tt,NULL);
+
+    if (progStartTime == 0)
+    {
+        progStartTime = tt.tv_sec;
+    }
+    tt.tv_sec = tt.tv_sec - progStartTime;
+    return (unsigned long long)((tt.tv_sec * 1000) + (tt.tv_usec / 1000));
 }
 
 void gen_palette(char colours[][3], int num_grads){
@@ -562,234 +560,226 @@ int ret;
 
 void waterfall()
 {
-  int level,level2;
-  int ret;
-  int baselevel;
-  int bwbaroffset;
-  float scaling;
-  int fftref;
-  int centreShift=0;
+    int level,level2;
+    int ret;
+    int baselevel;
+    int bwbaroffset;
+    float scaling;
+    int fftref;
+    int centreShift=0;
 
 
-     //check if data avilable to read
-      if((transmitting==1) && (satMode()==0))
-        {
+    //check if data avilable to read
+    if ((transmitting == 1) && (satMode() == 0))
+    {
         ret = fread(&inbuf,sizeof(float),1,txfftstream);
-        fftref=10;
-        }
-      else
-        {
-          ret = fread(&inbuf,sizeof(float),1,fftstream);
-          fftref=FFTRef;
-        }
-      
-      if(ret>0)
+        fftref = 10;
+    }
+    else
+    {
+        ret = fread(&inbuf,sizeof(float),1,fftstream);
+        fftref = FFTRef;
+    }
+
+    if (ret < 0)
+    {
+        printf("waterfall: failed to read from FFT stream\n");
+    }      
+
+    if (ret > 0)
     {    
-       
-       FFTTimeout = FFTTIMEOUT;
-    
+        FFTTimeout = FFTTIMEOUT;
+
         //shift buffer
-        for(int r=rows-1;r>0;r--)
+        for (int r = rows-1; r > 0; r--)
         {  
-          for(int p=0;p<points;p++)
-          {  
-            buf[p][r]=buf[p][r-1];
-          }
+            for (int p = 0; p < points; p++)
+            {  
+                buf[p][r] = buf[p][r-1];
+            }
         }
-    
+
         buf[0+points/2][0]=inbuf[0];    //use the read value
-    
+
         //Read in float values, shift centre and store in buffer 1st 'row'
         for(int p=1;p<points;p++)
         {                                               
-          if((transmitting==1) && (satMode()==0))
-          {
-          fread(&inbuf,sizeof(float),1,txfftstream);
-          }
-        else
-          {
-          fread(&inbuf,sizeof(float),1,fftstream);
-          }
-          
-          if(p<points/2)
-          {
-            buf[p+points/2][0]=inbuf[0];
-          }else
-          {
-            buf[p-points/2][0]=inbuf[0];
-          }
+            if((transmitting==1) && (satMode()==0))
+            {
+                fread(&inbuf,sizeof(float),1,txfftstream);
+            }
+            else
+            {
+                fread(&inbuf,sizeof(float),1,fftstream);
+            }
+            
+            if(p<points/2)
+            {
+                buf[p+points/2][0]=inbuf[0];
+            }
+            else
+            {
+                buf[p-points/2][0]=inbuf[0];
+            }
         }
- 
- 
+
         if(((mode==CW)||(mode==CWN)) && (transmitting==1) && (satMode()==0))
-          {
-          bwbaroffset=800/HzPerBin;
-          }
+        {
+            bwbaroffset=800/HzPerBin;
+        }
         else
-          {
-           bwbaroffset=0;
-          }
+        {
+            bwbaroffset=0;
+        }
         
- 
         //use raw values to calculate S meter value
         //use highest reading within the receiver bandwidth
         
-         sMeterPeak=-200;
-         for (int p=points/2+bwBarStart-bwbaroffset;p<points/2+bwBarEnd-bwbaroffset;p++)
-          {
-           if(buf[p][0]>sMeterPeak)
-             {
-             sMeterPeak=buf[p][0];
-             }
-           
-           }       
- 
-    
+        sMeterPeak=-200;
+        for (int p=points/2+bwBarStart-bwbaroffset;p<points/2+bwBarEnd-bwbaroffset;p++)
+        {
+            if(buf[p][0]>sMeterPeak)
+            {
+                sMeterPeak=buf[p][0];
+            }
+        }       
+
         //RF level adjustment
-    
- 
         baselevel=fftref-80;
         scaling = 255.0/(float)(fftref-baselevel);
-        
-        
-    
+
         //draw waterfall
         for(int r=0;r<rows;r++)
         {  
-          for(int p=0;p<points;p++)
-          {                                                                                                           
+            for(int p=0;p<points;p++)
+            {                                                                                                           
             //limit values displayed to range specified
             if (buf[p][r]<baselevel) buf[p][r]=baselevel;
             if (buf[p][r]>fftref) buf[p][r]=fftref;
-    
+
             //scale to 0-255
             level = (buf[p][r]-baselevel)*scaling;   
             setPixel(p+FFTX,FFTY+20+r,palette[level*3+2],palette[level*3+1],palette[level*3]);
-          }
+            }
         }
-    
+
         //clear spectrum area
         for(int r=0;r<spectrum_rows+1;r++)
         { 
-          for(int p=0;p<points;p++)
-          {   
-            setPixel(p+FFTX,FFTY-r,0,0,0);
-          }
+            for(int p=0;p<points;p++)
+            {   
+                setPixel(p+FFTX,FFTY-r,0,0,0);
+            }
         }
-    
+
         //draw spectrum line
-        
         scaling = spectrum_rows/(float)(fftref-baselevel);
         for(int p=0;p<points-1;p++)
         {  
             //limit values displayed to range specified
             if (buf[p][0]<baselevel) buf[p][0]=baselevel;
             if (buf[p][0]>fftref) buf[p][0]=fftref;
-    
+
             //scale to display height
             level = (buf[p][0]-baselevel)*scaling;   
             level2 = (buf[p+1][0]-baselevel)*scaling;
             drawLine(p+FFTX, FFTY-level, p+1+FFTX, FFTY-level2,255,255,255);
         }
-          
-          //draw Bandwidth indicator
-          int p=points/2;
-          
-          bwBarStart=rxFilterLow/HzPerBin;
-          bwBarEnd=rxFilterHigh/HzPerBin;
-          
-          if(bwBarStart < -255) bwBarStart = -255;
-          if(bwBarEnd  > 255) bwBarEnd = 255;
-          
+            
+        //draw Bandwidth indicator
+        int p=points/2;
         
-          
-          if (((mode==CW) || (mode==CWN)) && (transmitting==0 && satMode()== 0))
-          {
-           centreShift=800/HzPerBin;
-          }
-          else
-          {
-           centreShift=0;          
-          }
+        bwBarStart=rxFilterLow/HzPerBin;
+        bwBarEnd=rxFilterHigh/HzPerBin;
+        
+        if(bwBarStart < -255) bwBarStart = -255;
+        if(bwBarEnd  > 255) bwBarEnd = 255;
+        
+        if (((mode==CW) || (mode==CWN)) && (transmitting==0 && satMode()== 0))
+        {
+            centreShift=800/HzPerBin;
+        }
+        else
+        {
+            centreShift=0;          
+        }
 
-          if(bwBarStart > -255) drawLine(p+FFTX+bwBarStart-bwbaroffset, FFTY-spectrum_rows+5, p+FFTX+bwBarStart-bwbaroffset, FFTY-spectrum_rows,255,140,0);
-          drawLine(p+FFTX+bwBarStart-bwbaroffset, FFTY-spectrum_rows, p+FFTX+bwBarEnd-bwbaroffset, FFTY-spectrum_rows,255,140,0);
-          
-          if(bwBarEnd < 255) drawLine(p+FFTX+bwBarEnd-bwbaroffset, FFTY-spectrum_rows+5, p+FFTX+bwBarEnd-bwbaroffset, FFTY-spectrum_rows,255,140,0);  
-          //draw centre line (displayed frequency)
-          drawLine(p+FFTX+centreShift, FFTY-10, p+FFTX+centreShift, FFTY-spectrum_rows,255,0,0);  
-          
-          
-          //draw x Axis. 
-          int ticks[11] = {0,21,43,64,85,107,128,149,171,192,213};    // Rounded tick spacing at 21.333 pixels per tick 
-          drawLine(FFTX,FFTY +3,FFTX + points,FFTY+3,0,255,0);
-          for(int tick = 0;tick < 11;tick++)
-            {
-             drawLine(FFTX + p + ticks[tick],FFTY+3,FFTX + p + ticks[tick],FFTY +5,0,255,0);
-             drawLine(FFTX + p - ticks[tick],FFTY+3,FFTX + p - ticks[tick],FFTY +5,0,255,0); 
-            }
-          
-          //draw scale
-          setForeColour(0,255,0);
-          textSize=1;
-          gotoXY(p+FFTX-12,FFTY+8);
-          displayStr(" 0 ");
-          switch(bandFFTBW[band])
-          {
-              case 0:                 //48KHz BW
-              gotoXY(p+FFTX-ticks[5]-24,FFTY+8);
-              displayStr(" -10k   ");
-              gotoXY(p+FFTX-ticks[10]-24,FFTY+8);
-              displayStr(" -20k   ");
-              gotoXY(p+FFTX+ticks[5]-24,FFTY+8);
-              displayStr(" +10k   ");                                                                                             
-              gotoXY(p+FFTX+ticks[10]-24,FFTY+8);
-              displayStr(" +20k   ");
+        if(bwBarStart > -255) drawLine(p+FFTX+bwBarStart-bwbaroffset, FFTY-spectrum_rows+5, p+FFTX+bwBarStart-bwbaroffset, FFTY-spectrum_rows,255,140,0);
+        drawLine(p+FFTX+bwBarStart-bwbaroffset, FFTY-spectrum_rows, p+FFTX+bwBarEnd-bwbaroffset, FFTY-spectrum_rows,255,140,0);
+        
+        if(bwBarEnd < 255) drawLine(p+FFTX+bwBarEnd-bwbaroffset, FFTY-spectrum_rows+5, p+FFTX+bwBarEnd-bwbaroffset, FFTY-spectrum_rows,255,140,0);  
+
+        //draw centre line (displayed frequency)
+        drawLine(p+FFTX+centreShift, FFTY-10, p+FFTX+centreShift, FFTY-spectrum_rows,255,0,0);  
+        
+        //draw x Axis. 
+        int ticks[11] = {0,21,43,64,85,107,128,149,171,192,213};    // Rounded tick spacing at 21.333 pixels per tick 
+        drawLine(FFTX,FFTY +3,FFTX + points,FFTY+3,0,255,0);
+        for(int tick = 0;tick < 11;tick++)
+        {
+            drawLine(FFTX + p + ticks[tick],FFTY+3,FFTX + p + ticks[tick],FFTY +5,0,255,0);
+            drawLine(FFTX + p - ticks[tick],FFTY+3,FFTX + p - ticks[tick],FFTY +5,0,255,0); 
+        }
+        
+        //draw scale
+        setForeColour(0,255,0);
+        textSize=1;
+        gotoXY(p+FFTX-12,FFTY+8);
+        displayStr(" 0 ");
+
+        switch(bandFFTBW[band])
+        {
+            case 0:                 //48KHz BW
+                gotoXY(p+FFTX-ticks[5]-24,FFTY+8);
+                displayStr(" -10k   ");
+                gotoXY(p+FFTX-ticks[10]-24,FFTY+8);
+                displayStr(" -20k   ");
+                gotoXY(p+FFTX+ticks[5]-24,FFTY+8);
+                displayStr(" +10k   ");                                                                                             
+                gotoXY(p+FFTX+ticks[10]-24,FFTY+8);
+                displayStr(" +20k   ");
             break;
             case 1:                 //24KHz BW
-              gotoXY(p+FFTX-ticks[5]-20,FFTY+8);
-              displayStr(" -5k   ");
-              gotoXY(p+FFTX-ticks[10]-24,FFTY+8);
-              displayStr(" -10k   ");
-              gotoXY(p+FFTX+ticks[5]-20,FFTY+8);
-              displayStr(" +5k   ");                                                                                             
-              gotoXY(p+FFTX+ticks[10]-24,FFTY+8);
-              displayStr(" +10k   ");
+                gotoXY(p+FFTX-ticks[5]-20,FFTY+8);
+                displayStr(" -5k   ");
+                gotoXY(p+FFTX-ticks[10]-24,FFTY+8);
+                displayStr(" -10k   ");
+                gotoXY(p+FFTX+ticks[5]-20,FFTY+8);
+                displayStr(" +5k   ");                                                                                             
+                gotoXY(p+FFTX+ticks[10]-24,FFTY+8);
+                displayStr(" +10k   ");
             break;
             case 2:                 //12KHz BW
-              gotoXY(p+FFTX-ticks[5]-28,FFTY+8);
-              displayStr(" -2.5k   ");
-              gotoXY(p+FFTX-ticks[10]-20,FFTY+8);
-              displayStr(" -5k   ");
-              gotoXY(p+FFTX+ticks[5]-28,FFTY+8);
-              displayStr(" +2.5k   ");                                                                                             
-              gotoXY(p+FFTX+ticks[10]-20,FFTY+8);
-              displayStr(" +5k   ");
+                gotoXY(p+FFTX-ticks[5]-28,FFTY+8);
+                displayStr(" -2.5k   ");
+                gotoXY(p+FFTX-ticks[10]-20,FFTY+8);
+                displayStr(" -5k   ");
+                gotoXY(p+FFTX+ticks[5]-28,FFTY+8);
+                displayStr(" +2.5k   ");                                                                                             
+                gotoXY(p+FFTX+ticks[10]-20,FFTY+8);
+                displayStr(" +5k   ");
             break;
             case 3:                 //6KHz BW
-              gotoXY(p+FFTX-ticks[5]-32,FFTY+8);
-              displayStr(" -1.25k   ");
-              gotoXY(p+FFTX-ticks[10]-28,FFTY+8);
-              displayStr(" -2.5k   ");
-              gotoXY(p+FFTX+ticks[5]-32,FFTY+8);
-              displayStr(" +1.25k   ");                                                                                             
-              gotoXY(p+FFTX+ticks[10]-28,FFTY+8);
-              displayStr(" +2.5k   ");
+                gotoXY(p+FFTX-ticks[5]-32,FFTY+8);
+                displayStr(" -1.25k   ");
+                gotoXY(p+FFTX-ticks[10]-28,FFTY+8);
+                displayStr(" -2.5k   ");
+                gotoXY(p+FFTX+ticks[5]-32,FFTY+8);
+                displayStr(" +1.25k   ");                                                                                             
+                gotoXY(p+FFTX+ticks[10]-28,FFTY+8);
+                displayStr(" +2.5k   ");
             break;
-          }
+        }
 
- 
-
-          if((transmitting==0) || (satMode()==1))
-          {
-          S_Meter();
-          }
-          
-          else
-          {
-          P_Meter();
-          }
-   }       
+        if((transmitting==0) || (satMode()==1))
+        {
+            S_Meter();
+        }
+        else
+        {
+            P_Meter();
+        }
+    } 
 }
 
 
@@ -1081,16 +1071,30 @@ void displayError(char*st)
 void initPluto(void)
 {
     plutoctx = iio_create_context(NULL,plutoip);
-      if(iio_err(plutoctx)!=0)
-      {
-        plutoPresent=0;
+    if (iio_err(plutoctx) != 0)
+    {
+        plutoPresent = 0;
         displayError("Pluto not responding");
         return;
-      }
-      else
-      {
-      plutophy = iio_context_find_device(plutoctx, "ad9361-phy"); 
-      }
+    }
+
+    plutophy = iio_context_find_device(plutoctx, "ad9361-phy");
+    if (plutophy == NULL)
+    {
+        plutoPresent = 0;
+        displayError("AD9361-phy not responding");
+        return;
+    }
+
+    plutoPresent = 1;   // Pluto found and Linux driver is confirmed working
+
+    /*  enable Pluto onboard GPIO using method described in AD9361 Reference 
+        Manual UG-570 Rev A, pg 85 - GENERAL PURPOSE OUTPUT CONTROL
+
+        https://www.analog.com/media/en/technical-documentation/user-guides/AD9361_Reference_Manual_UG-570.pdf
+    */
+    wr_db_str(plutophy,"direct_reg_access","0x26 0x10");        // set bit D4 to enable manual GPIO mode
+    wr_db_str(plutophy,"direct_reg_access","0x27 0x00");        // set Pluto GPO[3:0] all low
 }
 
 
@@ -1308,30 +1312,73 @@ void setPlutoGpo(int p)
 
 void initUDP(void)
 {
-   struct sockaddr_in myaddr;
-   int fdr; 
-   int fdt; 
+    struct sockaddr_in myaddr;
+    int fdr; 
+    int retval = 0;
    
-//initialise Receive UDP receiver for FFT Receiver stream
-   fdr=socket(AF_INET,SOCK_DGRAM,0);
-   memset((char *)&myaddr,0,sizeof(myaddr));                      //Set any valid address for receiving UDP packets
-   myaddr.sin_family = AF_INET;                                  //Network Connection
-   myaddr.sin_addr.s_addr = htonl(INADDR_ANY);                   //Any Address
-   myaddr.sin_port = htons(RXPORT);                              //set UDP POrt to listen on
-   bind(fdr,(struct sockaddr *)&myaddr,sizeof(myaddr));          //bind the socket to the address  
-   fftstream=fdopen(fdr,"r");                                    //open as a stream
-   fcntl(fileno(fftstream), F_SETFL, O_RDONLY | O_NONBLOCK);    //set it as nonblocking
-   
-//initialise Receive UDP receiver for FFT Transmitter stream
-   fdr=socket(AF_INET,SOCK_DGRAM,0);
-   memset((char *)&myaddr,0,sizeof(myaddr));                      //Set any valid address for receiving UDP packets
-   myaddr.sin_family = AF_INET;                                   //Network Connection
-   myaddr.sin_addr.s_addr = htonl(INADDR_ANY);                   //Any Address
-   myaddr.sin_port = htons(TXPORT);                               //set UDP POrt to listen on
-   bind(fdr,(struct sockaddr *)&myaddr,sizeof(myaddr));          //bind the socket to the address  
-   txfftstream=fdopen(fdr,"r");                                  //open as a stream
-   fcntl(fileno(txfftstream), F_SETFL, O_RDONLY | O_NONBLOCK);   //set it as nonblocking
-      
+    // initialise Receive UDP receiver for FFT Receiver stream
+    fdr=socket(AF_INET,SOCK_DGRAM,0);
+    if( fdr < 0 )
+    {
+        printf("initUDP: FFT RX Socket could not be created\n");
+    }
+
+    memset((char *)&myaddr,0,sizeof(myaddr));                       //Set any valid address for receiving UDP packets
+    myaddr.sin_family = AF_INET;                                    //Network Connection
+    myaddr.sin_addr.s_addr = htonl(INADDR_ANY);                     //Any Address
+    myaddr.sin_port = htons(RXPORT);                                //set UDP POrt to listen on
+
+    retval = bind(fdr,(struct sockaddr *)&myaddr,sizeof(myaddr));   //bind the socket to the address  
+    if (retval < 0)
+    {
+        printf("initUPD: FFT RX could not bind to socket\n");
+    }
+
+    fftstream=fdopen(fdr,"r");                                      //open as a stream
+    if (fftstream == NULL)
+    {
+        printf("initUDP: FFT RX could not open fftstream\n");
+    }
+
+    retval = fcntl(fileno(fftstream), F_SETFL, O_RDONLY | O_NONBLOCK);    //set it as nonblocking
+    if( retval < 0)
+    {
+        printf("initUDP: FFT RX could not set file control\n");
+    }
+
+
+    //initialise Receive UDP receiver for FFT Transmitter stream
+    fdr=socket(AF_INET,SOCK_DGRAM,0);
+    if (fdr < 0)
+    {
+        printf("initUDP: FFT TX Socket could not be created\n");
+    }
+
+    memset((char *)&myaddr,0,sizeof(myaddr));                       //Set any valid address for receiving UDP packets
+    myaddr.sin_family = AF_INET;                                    //Network Connection
+    myaddr.sin_addr.s_addr = htonl(INADDR_ANY);                     //Any Address
+    myaddr.sin_port = htons(TXPORT);                                //set UDP POrt to listen on
+
+    retval = bind(fdr,(struct sockaddr *)&myaddr,sizeof(myaddr));   //bind the socket to the address  
+    if (retval < 0)
+    {
+        printf("initUPD: FFT TX could not bind to socket\n");
+    }
+
+    txfftstream=fdopen(fdr,"r");                                    //open as a stream
+    if (txfftstream == NULL)
+    {
+        printf("initUDP: FFT RX could not open fftstream\n");
+    }
+
+    retval = fcntl(fileno(txfftstream), F_SETFL, O_RDONLY | O_NONBLOCK);   //set it as nonblocking
+    if (retval < 0)
+    {
+        printf("initUDP: FFT RX could not set file control\n");
+    }
+    
+    // everything worked
+    printf("initUDP: UDP FFT TRX Streams - Initialised\n");
 }
 
 
@@ -1365,7 +1412,7 @@ void sendFifo(char * s)
        retry++;
      }
    while((ret==-1)&(retry<20));    
-  close(fifofd);
+   close(fifofd);
 }
 
 void initGPIO(void)
@@ -1517,7 +1564,7 @@ void initGUI()
 
  //bottom row of buttons
   displayMenu();
-  setBand(band);
+  //setBand(band);         // Removed, marked as unnecessary delete later
   
 //Squelch button now visible in all modes. 
     sqlButton(1);
@@ -1548,7 +1595,7 @@ void clearWaterfall(void)
 void initSDR(void)
 {
   setBand(band);
-  setMode(mode); 
+  //setMode(mode);          // called in setBand
   setVolume(volume);
   setSquelch(squelch);
   setRit(0);
@@ -3924,20 +3971,30 @@ return 0;
 
 void startGNURadio(void)
 {
-   printf("Starting GNU Radio\n");
-   FFTTimeout = FFTTIMEOUT * 5;                                //allow time to start
-   system("python $HOME/Langstone/Lang_TRX_Pluto.py > /tmp/LangstoneTRX_Pluto.log 2>&1 &");
+    printf("Starting GNU Radio ");
+    FFTTimeout = FFTTIMEOUT * 5;                                // allow time to start ~ 10s (200 x 10ms x 5)
+
+    int retval = system("python $HOME/Langstone/Lang_TRX_Pluto.py > /tmp/LangstoneTRX_Pluto.log 2>&1 &");
+    if (retval < 0)
+    {
+        printf("- Failed to start Error:(%i)\n", retval);
+        return;
+    }
+    else
+    {
+        printf("- Success returned:(%i)\n", retval);
+    }
 }
 
 void restartGNURadio(void)
 {
    setBandBits(0);
-   sendFifo("H0");        //unlock the flowgraph so that it can exit
-   sendFifo("Q");       //kill the SDR
-   FFTTimeout = FFTTIMEOUT * 5;                                //allow time to restart
+   sendFifo("H0");                          // unlock the flowgraph so that it can exit
+   sendFifo("Q");                           // kill the SDR
+   FFTTimeout = FFTTIMEOUT * 5;             // allow time to restart ~ 10s (200 x 10ms x 5)
    displayError("Restarting GNURadio");
    sleep(2);
-   startGNURadio();  
+   startGNURadio();
    sleep(2);
    initSDR();
 }
